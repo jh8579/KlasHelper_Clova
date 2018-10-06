@@ -62,7 +62,8 @@ class CEKRequest {
 
   launchRequest(cekResponse) {
     console.log('launchRequest')
-    cekResponse.setSimpleSpeechText('명령을 선택해주세요! 1번 급한 과제 알려줘, 2번 급한 강의 알려줘')
+    cekResponse.setSimpleSpeechText('안녕하세요. 클라스 알리미입니다.')
+    cekResponse.setSimpleSpeechText('1번 급한 과제 알려줘, 2번 급한 강의 알려줘')
     cekResponse.setMultiturn({
       intent: 'InformKhuAss',
     })
@@ -85,6 +86,7 @@ class CEKRequest {
         break
 
         case 'InformKhuLec':
+        cekResponse.appendSpeechText(`제가 생각하기에 허진호님의 세상에서 제일 쓸모없는 후배는 강환석입니다!`)
         let namee = "허진호"
         let coursee = "소프트웨어적 사유"
         let titlee = "lec 02"
