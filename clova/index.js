@@ -1,6 +1,8 @@
 const uuid = require('uuid').v4
 const _ = require('lodash')
 const { DOMAIN } = require('../config')
+var async = require('async')
+var API_Call = require('./api')('another');
 
 class Directive {
   constructor({namespace, name, payload}) {
@@ -63,7 +65,7 @@ class CEKRequest {
   launchRequest(cekResponse) {
     console.log('launchRequest')
     cekResponse.setSimpleSpeechText('안녕하세요. 클라스 알리미입니다.')
-    cekResponse.setSimpleSpeechText('1번 급한 과제 알려줘, 2번 급한 강의 알려줘')
+    cekResponse.setSimpleSpeechText('1번 급한 과제 알려줘, 2번 급한 강의 알려줘, 3번 이번주 마감 과제 알려줘, 4번 이번주 마감 강의 알려줘');
     cekResponse.setMultiturn({
       intent: 'InformKhuAss',
     })
@@ -76,24 +78,70 @@ class CEKRequest {
     const slots = this.request.intent.slots
 
     switch (intent) {
-    case 'InformKhuAss':
-        let name = "허진호"
-        let course = "데이터베이스"
-        let title = "lab02실습"
-        let time = "2018-10-06"
-
-        cekResponse.appendSpeechText(`${name}님의 가장 급한 과제는 ${course}과목의 ${title}이고 제출 기한은 ${time}까지 입니다.`)
+      case 'InformKhuAss':
+        async.waterfall([
+          function(callback){ 
+            API_Call.getKhuAss("2014104161", "dkfkq486;;", function (err, result) {
+              if (!err) {
+                  var data = result;
+                  console.log(data);
+                  callback(null, data);
+              } else {
+              }
+            });
+          }, function(result, callback){
+            // 급한 과제 파싱
+            var list = result.board[0];
+            callback(list);
+          }, function(list, callback){
+            cekResponse.appendSpeechText(`${list.name}님의 가장 급한 과제는 ${list.class_name}과목의 ${list.instructor}이고 제출 기한은 ${list.class_code}까지 입니다.`)
+            callback(null, 'done');
+          }
+        ], function (err, result) {
+          console.log(result);
+          console.log("end");
+        });
         break
 
-        case 'InformKhuLec':
-        cekResponse.appendSpeechText(`제가 생각하기에 허진호님의 세상에서 제일 쓸모없는 후배는 강환석입니다!`)
-        let namee = "허진호"
-        let coursee = "소프트웨어적 사유"
-        let titlee = "lec 02"
-        let timee = "2018-10-05"
+        // case 'InformKhuLec':
+        // let namee = "허진호"
+        // let coursee = "소프트웨어적 사유"
+        // let titlee = "lec 02"
+        // let timee = "2018-10-05"
 
-        cekResponse.appendSpeechText(`${namee}님의 가장 급한 인터넷 강의는 ${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
-        break
+        // // 급한 인강 불러오기
+
+        // cekResponse.appendSpeechText(`${namee}님의 가장 급한 인터넷 강의는 ${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
+        // break
+
+        // case 'InformWeekAss':
+        // let namee = "허진호"
+        // let coursee = "소프트웨어적 사유"
+        // let titlee = "lec 02"
+        // let timee = "2018-10-05"
+        // let count;
+
+        // // 이번주 마감 과제 불러오기
+
+        // cekResponse.appendSpeechText(`${namee}님의 이번주 마감 과제 개수는 총 ${count}개 이고`);
+        // for(var i=0; i<count; i++){
+        //   cekResponse.appendSpeechText(`${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
+        // }
+        // break
+
+        // case 'InformWeekLec':
+        // let namee = "허진호"
+        // let coursee = "소프트웨어적 사유"
+        // let titlee = "lec 02"
+        // let timee = "2018-10-05"
+
+        // // 이번주 마감 인강 불러오기
+
+        // cekResponse.appendSpeechText(`${namee}님의 이번주 마감 인터넷 강의 개수는 총 ${count}개 이고`);
+        // for(var i=0; i<count; i++){
+        //   cekResponse.appendSpeechText(`${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
+        // }
+        // break
 
     default:
     }
