@@ -1,4 +1,5 @@
 var request = require('request');
+var async = require('async')
 
 module.exports = function (callee) {
     
@@ -30,28 +31,29 @@ module.exports = function (callee) {
         })(callee);
         
         return {
-            
-            getKhuAss : function (id, pw, callback) {
-                OPTIONS.url = HOST + ':' + PORT + BASE_PATH + '/board';
-                OPTIONS.body = JSON.stringify({
-                    "id": id,
-                    "pw": pw
-                });
 
-                request.post(OPTIONS, function (err, res, result) {
-                    statusCodeErrorHandler(res.statusCode, callback, result);
-                });
+            getKhuAss : function(id, pw) {
+                    OPTIONS.url = HOST + ':' + PORT + BASE_PATH + '/board';
+                    OPTIONS.body = JSON.stringify({
+                        "id": id,
+                        "pw": pw
+                    });
+
+                    request.post(OPTIONS, function (err, res, result) {
+                        return statusCodeErrorHandler(res.statusCode, result);
+                        console.log("dd");
+                    });
             }
         };
     }
     
-    function statusCodeErrorHandler(statusCode, callback , data) {
+    async function statusCodeErrorHandler(statusCode, data) {
         switch (statusCode) {
             case 200:
-                callback(null, JSON.parse(data));
+                return JSON.parse(data);
                 break;
             default:
-                callback('error', JSON.parse(data));
+                return JSON.parse(data);
                 break;
         }
     }

@@ -3,9 +3,10 @@ const _ = require('lodash')
 const { DOMAIN } = require('../config')
 var async = require('async')
 var API_Call = require('./api')('another');
+var rp = require('request-promise');
 
 class Directive {
-  constructor({namespace, name, payload}) {
+  constructor({ namespace, name, payload }) {
     this.header = {
       messageId: uuid(),
       namespace: namespace,
@@ -15,39 +16,13 @@ class Directive {
   }
 }
 
-function resultText({midText, sum, diceCount}) {
-  if (diceCount == 1) {
-    return `결과는 ${sum}입니다.`
-  } else if (diceCount < 4) {
-    return `결과는 ${midText} 이며 합은 ${sum} 입니다.`
-  } else {
-    return `주사위 ${diceCount}개의 합은 ${sum} 입니다.`
-  }
-}
-
-function throwDice(diceCount) {
-  const results = []
-  let midText = ''
-  let resultText = ''
-  let sum = 0
-  console.log(`throw ${diceCount} times`)
-  for (let i = 0; i < diceCount; i++) {
-    const rand = Math.floor(Math.random() * 6) + 1
-    console.log(`${i + 1} time: ${rand}`)
-    results.push(rand)
-    sum += rand
-    midText += `${rand}, `
-  }
-
-  midText = midText.replace(/, $/, '')
-  return {midText, sum, diceCount}
-}
-
 class CEKRequest {
-  constructor (httpReq) {
+  constructor(httpReq) {
     this.request = httpReq.body.request
     this.context = httpReq.body.context
     this.session = httpReq.body.session
+    this.value = ""
+    
     console.log(`CEK Request: ${JSON.stringify(this.context)}, ${JSON.stringify(this.session)}`)
   }
 
@@ -56,7 +31,7 @@ class CEKRequest {
       case 'LaunchRequest':
         return this.launchRequest(cekResponse)
       case 'IntentRequest':
-        return this.intentRequest(cekResponse)
+        return this.intentRequest(cekResponse);
       case 'SessionEndedRequest':
         return this.sessionEndedRequest(cekResponse)
     }
@@ -64,14 +39,13 @@ class CEKRequest {
 
   launchRequest(cekResponse) {
     console.log('launchRequest')
-    cekResponse.setSimpleSpeechText('안녕하세요. 클라스 알리미입니다.')
-    cekResponse.setSimpleSpeechText('1번 급한 과제 알려줘, 2번 급한 강의 알려줘, 3번 이번주 마감 과제 알려줘, 4번 이번주 마감 강의 알려줘');
+    cekResponse.setSimpleSpeechText('안녕하세요. 클라스 알리미입니다. 1번 급한 과제 알려줘');
     cekResponse.setMultiturn({
       intent: 'InformKhuAss',
     })
   }
 
-  intentRequest(cekResponse) {
+  async intentRequest(cekResponse) {
     console.log('intentRequest')
     console.dir(this.request)
     const intent = this.request.intent.name
@@ -79,87 +53,83 @@ class CEKRequest {
 
     switch (intent) {
       case 'InformKhuAss':
-        async.waterfall([
-          function(callback){ 
-            API_Call.getKhuAss("2014104161", "dkfkq486;;", function (err, result) {
-              if (!err) {
-                  var data = result;
-                  console.log(data);
-                  callback(null, data);
-              } else {
-              }
-            });
-          }, function(result, callback){
-            // 급한 과제 파싱
-            var list = result.board[0];
-            callback(list);
-          }, function(list, callback){
-            cekResponse.appendSpeechText(`${list.name}님의 가장 급한 과제는 ${list.class_name}과목의 ${list.instructor}이고 제출 기한은 ${list.class_code}까지 입니다.`)
-            callback(null, 'done');
-          }
-        ], function (err, result) {
-          console.log(result);
-          console.log("end");
-        });
+        var options = {
+          method: 'POST',
+          uri: 'http://175.195.89.200:9999/board',
+          body: {
+              "id": "2014104161",
+              "pw": "dkfkq486!!"
+          },
+          json: true // Automatically stringifies the body to JSON
+        };
+        var value =""
+        var result = await rp(options).then(function(parsedBody){
+          value = parsedBody["board"][0];
+        })
+        console.log(value);
+        cekResponse.appendSpeechText(`${value.instructor}님의 가장 급한 과제는 ${value.class_name}과목의 ${value.class_code}이고 마감 기한은 어제까지 입니다.`);
+
+        console.log("case 종료")
         break
 
-        // case 'InformKhuLec':
-        // let namee = "허진호"
-        // let coursee = "소프트웨어적 사유"
-        // let titlee = "lec 02"
-        // let timee = "2018-10-05"
+      case 'InformKhuLec':
+        let namee = "허진호"
+        let coursee = "소프트웨어적 사유"
+        let titlee = "lec 02"
+        let timee = "2018-10-05"
 
-        // // 급한 인강 불러오기
+        // 급한 인강 불러오기
+        cekResponse.appendSpeechText(`${namee}님의 가장 급한 인터넷 강의는 ${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
+        break
 
-        // cekResponse.appendSpeechText(`${namee}님의 가장 급한 인터넷 강의는 ${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
-        // break
+      // case 'InformWeekAss':
+      // let namee = "허진호"
+      // let coursee = "소프트웨어적 사유"
+      // let titlee = "lec 02"
+      // let timee = "2018-10-05"
+      // let count;
 
-        // case 'InformWeekAss':
-        // let namee = "허진호"
-        // let coursee = "소프트웨어적 사유"
-        // let titlee = "lec 02"
-        // let timee = "2018-10-05"
-        // let count;
+      // // 이번주 마감 과제 불러오기
 
-        // // 이번주 마감 과제 불러오기
+      // cekResponse.appendSpeechText(`${namee}님의 이번주 마감 과제 개수는 총 ${count}개 이고`);
+      // for(var i=0; i<count; i++){
+      //   cekResponse.appendSpeechText(`${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
+      // }
+      // break
 
-        // cekResponse.appendSpeechText(`${namee}님의 이번주 마감 과제 개수는 총 ${count}개 이고`);
-        // for(var i=0; i<count; i++){
-        //   cekResponse.appendSpeechText(`${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
-        // }
-        // break
+      // case 'InformWeekLec':
+      // let namee = "허진호"
+      // let coursee = "소프트웨어적 사유"
+      // let titlee = "lec 02"
+      // let timee = "2018-10-05"
 
-        // case 'InformWeekLec':
-        // let namee = "허진호"
-        // let coursee = "소프트웨어적 사유"
-        // let titlee = "lec 02"
-        // let timee = "2018-10-05"
+      // // 이번주 마감 인강 불러오기
 
-        // // 이번주 마감 인강 불러오기
+      // cekResponse.appendSpeechText(`${namee}님의 이번주 마감 인터넷 강의 개수는 총 ${count}개 이고`);
+      // for(var i=0; i<count; i++){
+      //   cekResponse.appendSpeechText(`${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
+      // }
+      // break
 
-        // cekResponse.appendSpeechText(`${namee}님의 이번주 마감 인터넷 강의 개수는 총 ${count}개 이고`);
-        // for(var i=0; i<count; i++){
-        //   cekResponse.appendSpeechText(`${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
-        // }
-        // break
-
-    default:
+      default:
     }
 
     if (this.session.new == false) {
       cekResponse.setMultiturn()
     }
+
+    console.log("함수 종료")
   }
 
   sessionEndedRequest(cekResponse) {
     console.log('sessionEndedRequest')
-    cekResponse.setSimpleSpeechText('주사위 놀이 익스텐션을 종료합니다.')
+    cekResponse.setSimpleSpeechText('클라스 알리미를 종료합니다.')
     cekResponse.clearMultiturn()
   }
 }
 
 class CEKResponse {
-  constructor () {
+  constructor() {
     console.log('CEKResponse constructor')
     this.response = {
       directives: [],
@@ -185,37 +155,51 @@ class CEKResponse {
     this.response.outputSpeech = {
       type: 'SimpleSpeech',
       values: {
-          type: 'PlainText',
-          lang: 'ko',
-          value: outputText,
+        type: 'PlainText',
+        lang: 'ko',
+        value: outputText,
       },
     }
   }
 
   appendSpeechText(outputText) {
+    console.log(outputText)
     const outputSpeech = this.response.outputSpeech
     if (outputSpeech.type != 'SpeechList') {
       outputSpeech.type = 'SpeechList'
       outputSpeech.values = []
     }
-    if (typeof(outputText) == 'string') {
+    if (typeof (outputText) == 'string') {
       outputSpeech.values.push({
         type: 'PlainText',
         lang: 'ko',
         value: outputText,
       })
+
     } else {
       outputSpeech.values.push(outputText)
     }
   }
+
 }
 
-const clovaReq = function (httpReq, httpRes, next) {
+const clovaReq = async function (httpReq, httpRes, next) {
   cekResponse = new CEKResponse()
   cekRequest = new CEKRequest(httpReq)
-  cekRequest.do(cekResponse)
+  var result = await cekRequest.do(cekResponse)
+  
   console.log(`CEKResponse: ${JSON.stringify(cekResponse)}`)
   return httpRes.send(cekResponse)
 };
+
+function sleep(ms) {
+  return new Promise(resolve => {
+      console.log(`starting ${ms}`);
+      setTimeout(() => {
+          console.log(`done ${ms}`);
+          resolve(ms);
+      }, ms);
+  });
+} 
 
 module.exports = clovaReq;
