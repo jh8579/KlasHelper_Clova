@@ -51,7 +51,7 @@ class CEKRequest {
     };
    
     var name1, ass1, ass2;
-    await rp(options).then(function(parsedBody){
+    rp(options).then(function(parsedBody){
       result = parsedBody["name"]
     }).catch(function(err){
       console.log(err);
@@ -221,24 +221,11 @@ class CEKResponse {
 const clovaReq = async function (httpReq, httpRes, next) {
   cekResponse = new CEKResponse()
   cekRequest = new CEKRequest(httpReq)
-  cekResponse.appendSpeechText('과제 업데이트 중입니다.');
-  cekResponse.setMultiturn({
-    intent: 'InformKhuAss',
-  })
+  
   var result = await cekRequest.do(cekResponse)
   
   console.log(`CEKResponse: ${JSON.stringify(cekResponse)}`)
   return httpRes.send(cekResponse)
 };
-
-function sleep(ms) {
-  return new Promise(resolve => {
-      console.log(`starting ${ms}`);
-      setTimeout(() => {
-          console.log(`done ${ms}`);
-          resolve(ms);
-      }, ms);
-  });
-} 
 
 module.exports = clovaReq;
