@@ -199,7 +199,6 @@ class CEKResponse {
   }
 
   appendSpeechText(outputText) {
-    console.log(outputText)
     const outputSpeech = this.response.outputSpeech
     if (outputSpeech.type != 'SpeechList') {
       outputSpeech.type = 'SpeechList'
@@ -223,6 +222,9 @@ const clovaReq = async function (httpReq, httpRes, next) {
   cekResponse = new CEKResponse()
   cekRequest = new CEKRequest(httpReq)
   cekResponse.appendSpeechText('과제 업데이트 중입니다.');
+  cekResponse.setMultiturn({
+    intent: 'InformKhuAss',
+  })
   var result = await cekRequest.do(cekResponse)
   
   console.log(`CEKResponse: ${JSON.stringify(cekResponse)}`)
