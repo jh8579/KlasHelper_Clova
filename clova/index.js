@@ -91,7 +91,7 @@ class CEKRequest {
           ass1 = parsedBody["ASS"][0];
           ass2 = parsedBody["ASS"][1];
         })
-
+        console.log(ass1);
         cekResponse.appendSpeechText(`${name1}님의 가장 급한 과제는 ${ass1.workCourse} 수업의 ${ass1.workTitle}이고 마감 기한은 ${ass1.workFinishTime}까지이고.`);
         cekResponse.appendSpeechText(`두 번째로 급한 과제는 ${ass2.workCourse} 수업의 ${ass2.workTitle}이고 마감 기한은 ${ass2.workFinishTime}까지입니다.`);
         console.log("InformKhuAss case 종료")
