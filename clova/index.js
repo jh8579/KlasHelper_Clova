@@ -40,6 +40,8 @@ class CEKRequest {
   async launchRequest(cekResponse) {
     console.log('launchRequest')
     cekResponse.setSimpleSpeechText('과제 업데이트 중입니다.');
+    console.log("launchRequest 함수 시작")
+
     var options = {
       method: 'POST',
       uri: 'http://175.195.89.200:9999/update',
@@ -49,15 +51,14 @@ class CEKRequest {
       },
       json: true // Automatically stringifies the body to JSON
     };
-    cekResponse.setMultiturn({
-      intent: 'InformKhuAss',
-    })
+   
     var name1, ass1, ass2;
     await rp(options).then(function(parsedBody){
       result = parsedBody["name"]
     })
     cekResponse.appendSpeechText('과제 업데이트가 완료되었습니다.');
-  
+    console.log("업데이트 종료")
+
     cekResponse.appendSpeechText('안녕하세요. 클라스 알리미입니다. 1번 급한 과제 알려줘, 2번 급한 강의 알려줘');
     cekResponse.setMultiturn({
       intent: 'InformKhuAss',
