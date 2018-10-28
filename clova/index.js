@@ -37,7 +37,7 @@ class CEKRequest {
     }
   }
 
-  launchRequest(cekResponse) {
+  async launchRequest(cekResponse) {
     console.log('launchRequest')
     cekResponse.setSimpleSpeechText('과제 업데이트 중입니다.');
     var options = {
