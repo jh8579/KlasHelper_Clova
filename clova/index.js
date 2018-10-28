@@ -55,7 +55,9 @@ class CEKRequest {
     var name1, ass1, ass2;
     await rp(options).then(function(parsedBody){
       result = parsedBody["name"]
-    })
+    }).catch(function(err){
+      console.log(err);
+    });
     cekResponse.appendSpeechText('과제 업데이트가 완료되었습니다.');
     console.log("업데이트 종료")
 
