@@ -49,7 +49,9 @@ class CEKRequest {
       },
       json: true // Automatically stringifies the body to JSON
     };
-    
+    cekResponse.setMultiturn({
+      intent: 'InformKhuAss',
+    })
     var name1, ass1, ass2;
     await rp(options).then(function(parsedBody){
       result = parsedBody["name"]
