@@ -90,7 +90,6 @@ class CEKRequest {
           name1 = parsedBody["NAME"]
           ass1 = parsedBody["ASS"][0];
           ass2 = parsedBody["ASS"][1];
-          console.log(parsedBody)
         })
        
         cekResponse.appendSpeechText(`${name1}님의 가장 급한 과제는 ${ass1.workCourse} 수업의 ${ass1.workTitle}이고 마감 기한은 ${ass1.workFinishTime}까지이고.`);
