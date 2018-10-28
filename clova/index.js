@@ -82,13 +82,13 @@ class CEKRequest {
         
         var name1, ass1, ass2;
         await rp(options).then(function(parsedBody){
-          name1 = parsedBody["name"]
-          ass1 = parsedBody["ass"][0];
-          ass2 = parsedBody["ass"][1];
+          name1 = parsedBody["NAME"]
+          ass1 = parsedBody["ASS"][0];
+          ass2 = parsedBody["ASS"][1];
         })
 
-        cekResponse.appendSpeechText(`${name1}님의 가장 급한 과제는 ${ass1.class_name} 수업의 ${ass1.work_name}이고 마감 기한은 ${ass1.work_time}까지이고.`);
-        cekResponse.appendSpeechText(`두 번째로 급한 과제는 ${ass2.class_name} 수업의 ${ass2.work_name}이고 마감 기한은 ${ass2.work_time}까지입니다.`);
+        cekResponse.appendSpeechText(`${name1}님의 가장 급한 과제는 ${ass1.workCourse} 수업의 ${ass1.workTitle}이고 마감 기한은 ${ass1.workFinishTime}까지이고.`);
+        cekResponse.appendSpeechText(`두 번째로 급한 과제는 ${ass2.workCourse} 수업의 ${ass2.workTitle}이고 마감 기한은 ${ass2.workFinishTime}까지입니다.`);
         console.log("InformKhuAss case 종료")
         break
 
@@ -105,13 +105,13 @@ class CEKRequest {
 
       var name2, lec1, lec2;
       await rp(options).then(function(parsedBody){
-        name2 = parsedBody["name"]
-        lec1 = parsedBody["lec"][0];
-        lec2 = parsedBody["lec"][1];
+        name2 = parsedBody["NAME"]
+        lec1 = parsedBody["LEC"][0];
+        lec2 = parsedBody["LEC"][1];
       })
       
-      cekResponse.appendSpeechText(`${name2}님의 가장 급한 인터넷 강의는 ${lec1.class_name} 수업의 ${lec1.work_name}이고 마감 기한은 ${lec1.work_time}까지이고.`);
-      cekResponse.appendSpeechText(`두 번째로 급한 과제는 ${lec2.class_name} 수업의 ${lec2.work_name}이고 마감 기한은 ${lec2.work_time}까지입니다.`);
+      cekResponse.appendSpeechText(`${name2}님의 가장 급한 인터넷 강의는 ${lec1.workCourse} 수업의 ${lec1.workTitle}이고 마감 기한은 ${lec1.workFinishTime}까지이고.`);
+      cekResponse.appendSpeechText(`두 번째로 급한 과제는 ${lec2.workCourse} 수업의 ${lec2.workTitle}이고 마감 기한은 ${lec2.workFinishTime}까지입니다.`);
       console.log("InformKhuLec case 종료")
       break
 
