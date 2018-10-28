@@ -39,7 +39,24 @@ class CEKRequest {
 
   launchRequest(cekResponse) {
     console.log('launchRequest')
-    cekResponse.setSimpleSpeechText('안녕하세요. 클라스 알리미입니다. 1번 급한 과제 알려줘');
+    cekResponse.setSimpleSpeechText('과제 업데이트 중입니다.');
+    var options = {
+      method: 'POST',
+      uri: 'http://175.195.89.200:9999/update',
+      body: {
+          "id": "2014104161",
+          "pw": "dkfkq486!!"
+      },
+      json: true // Automatically stringifies the body to JSON
+    };
+    
+    var name1, ass1, ass2;
+    await rp(options).then(function(parsedBody){
+      result = parsedBody["name"]
+    })
+    cekResponse.appendSpeechText('과제 업데이트가 완료되었습니다.');
+  
+    cekResponse.appendSpeechText('안녕하세요. 클라스 알리미입니다. 1번 급한 과제 알려줘, 2번 급한 강의 알려줘');
     cekResponse.setMultiturn({
       intent: 'InformKhuAss',
     })
@@ -55,32 +72,48 @@ class CEKRequest {
       case 'InformKhuAss':
         var options = {
           method: 'POST',
-          uri: 'http://175.195.89.200:9999/board',
+          uri: 'http://175.195.89.200:9999/clovaAss',
           body: {
               "id": "2014104161",
               "pw": "dkfkq486!!"
           },
           json: true // Automatically stringifies the body to JSON
         };
-        var value =""
-        var result = await rp(options).then(function(parsedBody){
-          value = parsedBody["board"][0];
+        
+        var name1, ass1, ass2;
+        await rp(options).then(function(parsedBody){
+          name1 = parsedBody["name"]
+          ass1 = parsedBody["ass"][0];
+          ass2 = parsedBody["ass"][1];
         })
-        console.log(value);
-        cekResponse.appendSpeechText(`${value.instructor}님의 가장 급한 과제는 ${value.class_name}과목의 ${value.class_code}이고 마감 기한은 어제까지 입니다.`);
 
-        console.log("case 종료")
+        cekResponse.appendSpeechText(`${name1}님의 가장 급한 과제는 ${ass1.class_name} 수업의 ${ass1.work_name}이고 마감 기한은 ${ass1.work_time}까지이고.`);
+        cekResponse.appendSpeechText(`두 번째로 급한 과제는 ${ass2.class_name} 수업의 ${ass2.work_name}이고 마감 기한은 ${ass2.work_time}까지입니다.`);
+        console.log("InformKhuAss case 종료")
         break
 
       case 'InformKhuLec':
-        let namee = "허진호"
-        let coursee = "소프트웨어적 사유"
-        let titlee = "lec 02"
-        let timee = "2018-10-05"
+      var options = {
+        method: 'POST',
+        uri: 'http://175.195.89.200:9999/clovaLec',
+        body: {
+            "id": "2014104161",
+            "pw": "dkfkq486!!"
+        },
+        json: true // Automatically stringifies the body to JSON
+      };
 
-        // 급한 인강 불러오기
-        cekResponse.appendSpeechText(`${namee}님의 가장 급한 인터넷 강의는 ${coursee}과목의 ${titlee}이고 마감 기한은 ${timee}까지 입니다.`)
-        break
+      var name2, lec1, lec2;
+      await rp(options).then(function(parsedBody){
+        name2 = parsedBody["name"]
+        lec1 = parsedBody["lec"][0];
+        lec2 = parsedBody["lec"][1];
+      })
+      
+      cekResponse.appendSpeechText(`${name2}님의 가장 급한 인터넷 강의는 ${lec1.class_name} 수업의 ${lec1.work_name}이고 마감 기한은 ${lec1.work_time}까지이고.`);
+      cekResponse.appendSpeechText(`두 번째로 급한 과제는 ${lec2.class_name} 수업의 ${lec2.work_name}이고 마감 기한은 ${lec2.work_time}까지입니다.`);
+      console.log("InformKhuLec case 종료")
+      break
 
       // case 'InformWeekAss':
       // let namee = "허진호"
@@ -118,7 +151,7 @@ class CEKRequest {
       cekResponse.setMultiturn()
     }
 
-    console.log("함수 종료")
+    console.log("intentRequest 함수 종료")
   }
 
   sessionEndedRequest(cekResponse) {
