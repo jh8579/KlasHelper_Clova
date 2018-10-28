@@ -39,8 +39,6 @@ class CEKRequest {
 
   async launchRequest(cekResponse) {
     console.log('launchRequest')
-    cekResponse.setSimpleSpeechText('과제 업데이트 중입니다.');
-    console.log("launchRequest 함수 시작")
 
     var options = {
       method: 'POST',
@@ -224,6 +222,7 @@ class CEKResponse {
 const clovaReq = async function (httpReq, httpRes, next) {
   cekResponse = new CEKResponse()
   cekRequest = new CEKRequest(httpReq)
+  cekResponse.appendSpeechText('과제 업데이트 중입니다.');
   var result = await cekRequest.do(cekResponse)
   
   console.log(`CEKResponse: ${JSON.stringify(cekResponse)}`)
